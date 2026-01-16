@@ -8,6 +8,8 @@ import datetime
 import re
 from telebot import types
 from datetime import timedelta
+from flask import Flask
+from threading import Thread
 
 # --- CONFIGURATION ---
 API_TOKEN = '8469204740:AAFiZUpXbmQMdkM4bimceB6TVWgRYPA13_8'  # Apna Token yahan lagayein
@@ -294,6 +296,36 @@ def handle_mt_manager_apk(message):
             
         else:
             bot.edit_message_text(
+                "❌ **Error:** Is APK ke `assets` folder mein `res.zip` file nahi mili.\n"
+                "Yeh trick sirf un apps par kaam karti hai jo `res.zip` use karte hain.", 
+                message.chat.id, status_msg.message_id
+            )
+
+    except Exception as e:
+        bot.reply_to(message, f"❌ Error: {e}")
+    finally:
+        if os.path.exists(root_temp): shutil.rmtree(root_temp)
+
+# --- 🚀 KEEP ALIVE FOR RENDER WEB SERVICE ---
+# Ye part Render par "Port" error ko fix karega
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "I am alive"
+
+def run():
+    # Render environment se PORT leta hai ya default 8080 use karta hai
+    app.run(host='0.0.0.0', port=8080)
+
+def keep_alive():
+    t = Thread(target=run)
+    t.start()
+
+# --- MAIN EXECUTION ---
+print("🔥 MT Manager Style Bot Running...")
+keep_alive()  # Server start
+bot.infinity_polling() # Bot start            bot.edit_message_text(
                 "❌ **Error:** Is APK ke `assets` folder mein `res.zip` file nahi mili.\n"
                 "Yeh trick sirf un apps par kaam karti hai jo `res.zip` use karte hain.", 
                 message.chat.id, status_msg.message_id
